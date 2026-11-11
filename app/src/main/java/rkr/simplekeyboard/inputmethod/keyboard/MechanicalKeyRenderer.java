@@ -20,6 +20,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.os.SystemClock;
 import android.util.DisplayMetrics;
 
 import rkr.simplekeyboard.inputmethod.latin.settings.Settings;
@@ -33,6 +34,13 @@ public final class MechanicalKeyRenderer {
     public static final String PROFILE_RAISED = "raised";
     private static final String PROFILE_ROUNDED = "rounded";
     private static final String PROFILE_SCULPTED = "sculpted";
+    private static final String EFFECT_OFF = "off";
+    private static final String EFFECT_STATIC = "static";
+    private static final String EFFECT_RAINBOW = "rainbow";
+    private static final String EFFECT_BREATHING = "breathing";
+    private static final String EFFECT_GRADIENT = "gradient";
+    private static final String EFFECT_WAVE = "wave";
+    private static final String EFFECT_REACTIVE = "reactive";
 
     private static final Palette OBSIDIAN = new Palette(
             0xFF111721, 0xFF263244, 0xFF151D2A, 0xFF46566B, 0xFF8BE9F2,
@@ -62,6 +70,10 @@ public final class MechanicalKeyRenderer {
     private float mRadius;
     private float mInset;
     private float mSideInset;
+    private String mRgbEffect = EFFECT_STATIC;
+    private int mRgbBrightness = 75;
+    private int mRgbSpeed = 100;
+    private final float[] mHsv = new float[3];
 
     public MechanicalKeyRenderer(final DisplayMetrics metrics) {
         mDensity = metrics.density;
@@ -73,6 +85,11 @@ public final class MechanicalKeyRenderer {
         final String theme = preferences.getString(Settings.PREF_MECHANICAL_THEME, "obsidian_neon");
         mProfile = preferences.getString(Settings.PREF_KEYCAP_PROFILE, PROFILE_RAISED);
         mPalette = paletteFor(theme);
+        mRgbEffect = preferences.getString(Settings.PREF_RGB_EFFECT, EFFECT_STATIC);
+        mRgbBrightness = Math.max(0, Math.min(100,
+                preferences.getInt(Settings.PREF_RGB_BRIGHTNESS, 75)));
+        mRgbSpeed = Math.max(25, Math.min(200,
+                preferences.getInt(Settings.PREF_RGB_SPEED, 100)));
         if (PROFILE_CLASSIC.equals(mProfile)) {
             mDepth = 0.0f;
             mRadius = dp(6.0f);
@@ -99,6 +116,11 @@ public final class MechanicalKeyRenderer {
 
     public boolean isEnabled() {
         return !PROFILE_CLASSIC.equals(mProfile);
+    }
+
+    public boolean isAnimationActive() {
+        return isEnabled() && (EFFECT_RAINBOW.equals(mRgbEffect)
+                || EFFECT_BREATHING.equals(mRgbEffect) || EFFECT_WAVE.equals(mRgbEffect));
     }
 
     public int getBoardColor() {
@@ -133,7 +155,8 @@ public final class MechanicalKeyRenderer {
         params.mPreviewTextColor = mPalette.text;
     }
 
-    public void drawKey(final Canvas canvas, final Key key, final int[] drawableState) {
+    public void drawKey(final Canvas canvas, final Key key, final int[] drawableState,
+            final int keyboardWidth) {
         final float width = key.getWidth();
         final float height = key.getHeight();
         if (width <= dp(2.0f) || height <= dp(2.0f)) {
@@ -143,14 +166,17 @@ public final class MechanicalKeyRenderer {
         final boolean pressed = hasState(drawableState, android.R.attr.state_pressed);
         final boolean selected = hasState(drawableState, android.R.attr.state_active)
                 || hasState(drawableState, android.R.attr.state_checked);
+        final int rgbColor = getLightingColor(key, keyboardWidth, pressed, selected);
         final float depth = Math.min(mDepth, height * 0.18f);
         final float pressedDepth = pressed ? Math.min(depth, dp(0.9f)) : depth;
         final float pressOffset = depth - pressedDepth;
         final float radius = Math.min(mRadius, Math.min(width, height) * 0.22f);
-        final int sideColor = selected ? blend(mPalette.side, mPalette.accent, 0.24f) : mPalette.side;
-        final int faceColor = selected ? blend(mPalette.face, mPalette.accent, 0.13f)
+        final int sideColor = selected ? blend(mPalette.side, rgbColor, 0.24f) : mPalette.side;
+        final int faceColor = selected ? blend(mPalette.face, rgbColor, 0.13f)
                 : (pressed ? mPalette.pressedFace : mPalette.face);
-        final int edgeColor = selected ? blend(mPalette.border, mPalette.accent, 0.42f) : mPalette.border;
+        final float edgeLighting = EFFECT_OFF.equals(mRgbEffect) ? 0.0f
+                : (EFFECT_REACTIVE.equals(mRgbEffect) && !pressed && !selected ? 0.08f : 0.52f);
+        final int edgeColor = blend(mPalette.border, rgbColor, edgeLighting);
 
         mPaint.setShader(null);
         mPaint.setStyle(Paint.Style.FILL);
@@ -169,7 +195,9 @@ public final class MechanicalKeyRenderer {
         // Thin directional top sheen and a restrained lower inner edge sell the sculpted cap.
         mPaint.setStyle(Paint.Style.STROKE);
         mPaint.setStrokeWidth(dp(0.7f));
-        mPaint.setColor(withAlpha(mPalette.highlight, pressed ? 72 : 116));
+        final int topHighlight = EFFECT_OFF.equals(mRgbEffect) ? mPalette.highlight
+                : blend(mPalette.highlight, rgbColor, 0.2f);
+        mPaint.setColor(withAlpha(topHighlight, pressed ? 72 : 116));
         final float lineInset = Math.min(radius, (right - left) * 0.32f);
         canvas.drawLine(left + lineInset, top + dp(1.3f), right - lineInset,
                 top + dp(1.3f), mPaint);
@@ -182,6 +210,54 @@ public final class MechanicalKeyRenderer {
         mRect.inset(dp(0.4f), dp(0.4f));
         canvas.drawRoundRect(mRect, radius, radius, mPaint);
         mPaint.setStyle(Paint.Style.FILL);
+    }
+
+    private int getLightingColor(final Key key, final int keyboardWidth, final boolean pressed,
+            final boolean selected) {
+        final float brightness = mRgbBrightness / 100.0f;
+        final float position = keyboardWidth <= 0 ? 0.0f
+                : Math.max(0.0f, Math.min(1.0f, (float)key.getX() / keyboardWidth));
+        if (EFFECT_OFF.equals(mRgbEffect)) {
+            return mPalette.accent;
+        }
+        if (EFFECT_RAINBOW.equals(mRgbEffect)) {
+            final float hue = (position * 360.0f
+                    + SystemClock.uptimeMillis() * (mRgbSpeed / 100.0f) * 0.035f) % 360.0f;
+            return applyBrightness(hsvColor(hue, 0.82f, 1.0f), brightness);
+        }
+        if (EFFECT_BREATHING.equals(mRgbEffect)) {
+            final double phase = SystemClock.uptimeMillis() * (mRgbSpeed / 100.0f) * 0.0015;
+            final float pulse = 0.25f + 0.75f * (0.5f + 0.5f * (float)Math.sin(phase));
+            return applyBrightness(mPalette.accent, brightness * pulse);
+        }
+        if (EFFECT_GRADIENT.equals(mRgbEffect)) {
+            return applyBrightness(hsvColor(190.0f + 130.0f * position, 0.78f, 1.0f), brightness);
+        }
+        if (EFFECT_WAVE.equals(mRgbEffect)) {
+            final double phase = position * 6.283185307179586
+                    - SystemClock.uptimeMillis() * (mRgbSpeed / 100.0f) * 0.004;
+            final float pulse = 0.24f + 0.76f * (0.5f + 0.5f * (float)Math.sin(phase));
+            final int waveColor = hsvColor(190.0f + 130.0f * position, 0.78f, 1.0f);
+            return applyBrightness(waveColor, brightness * pulse);
+        }
+        if (EFFECT_REACTIVE.equals(mRgbEffect)) {
+            return applyBrightness(mPalette.accent, brightness
+                    * ((pressed || selected) ? 1.0f : 0.18f));
+        }
+        return applyBrightness(mPalette.accent, brightness);
+    }
+
+    private int hsvColor(final float hue, final float saturation, final float value) {
+        mHsv[0] = hue;
+        mHsv[1] = saturation;
+        mHsv[2] = value;
+        return Color.HSVToColor(mHsv);
+    }
+
+    private static int applyBrightness(final int color, final float brightness) {
+        final float level = Math.max(0.0f, Math.min(1.0f, brightness));
+        return Color.rgb(Math.round(Color.red(color) * level),
+                Math.round(Color.green(color) * level), Math.round(Color.blue(color) * level));
     }
 
     private float dp(final float value) {

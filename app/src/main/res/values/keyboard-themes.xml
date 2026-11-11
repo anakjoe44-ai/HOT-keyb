@@ -84,4 +84,22 @@
         <item>raised</item>
         <item>sculpted</item>
     </string-array>
+    <string-array name="rgb_effect_names" translatable="false">
+        <item>Off</item>
+        <item>Static</item>
+        <item>Rainbow</item>
+        <item>Breathing</item>
+        <item>Gradient</item>
+        <item>Wave</item>
+        <item>Reactive</item>
+    </string-array>
+    <string-array name="rgb_effect_ids" translatable="false">
+        <item>off</item>
+        <item>static</item>
+        <item>rainbow</item>
+        <item>breathing</item>
+        <item>gradient</item>
+        <item>wave</item>
+        <item>reactive</item>
+    </string-array>
 </resources>

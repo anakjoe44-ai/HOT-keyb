@@ -39,6 +39,11 @@
     <string name="settings_mechanical_palette_summary">Choose a dark neon palette or a titanium keycap look</string>
     <string name="settings_keycap_profile">Keycap profile</string>
     <string name="settings_keycap_profile_summary">Choose the key shape and raised depth</string>
+    <string name="settings_rgb_lighting">RGB lighting</string>
+    <string name="settings_rgb_effect">Lighting effect</string>
+    <string name="settings_rgb_effect_summary">Choose an effect or turn lighting off; effects run only while the keyboard is visible</string>
+    <string name="settings_rgb_brightness">Lighting brightness</string>
+    <string name="settings_rgb_speed">Animation speed</string>
 
     <!-- Units abbreviation for the duration (milliseconds) [CHAR LIMIT=10] -->
     <string name="abbreviation_unit_milliseconds"><xliff:g id="MILLISECONDS">%s</xliff:g>ms</string>

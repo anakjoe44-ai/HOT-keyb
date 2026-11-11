@@ -40,6 +40,7 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
         setupKeyboardHeightSettings();
         setupBottomOffsetPortraitSettings();
         setupKeyboardColorSettings();
+        setupRgbSettings();
     }
 
     @Override
@@ -48,6 +49,7 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
 
         ThemeSettingsFragment.updateKeyboardThemeSummary(findPreference(Settings.SCREEN_THEME));
         updateKeyboardColorPreference();
+        updateRgbPreferenceAvailability();
     }
 
     @Override
@@ -59,6 +61,10 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
                 || Settings.PREF_KEYCAP_PROFILE.equals(key)) {
             updateKeyboardColorPreference();
         }
+        if (Settings.PREF_KEYCAP_PROFILE.equals(key)
+                || Settings.PREF_RGB_EFFECT.equals(key)) {
+            updateRgbPreferenceAvailability();
+        }
     }
 
     private void updateKeyboardColorPreference() {
@@ -68,6 +74,20 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
                 MechanicalKeyRenderer.PROFILE_RAISED);
         setPreferenceEnabled(Settings.PREF_KEYBOARD_COLOR,
                 theme.mCustomColorSupport && MechanicalKeyRenderer.PROFILE_CLASSIC.equals(profile));
+    }
+
+    private void updateRgbPreferenceAvailability() {
+        final SharedPreferences prefs = getSharedPreferences();
+        final String profile = prefs.getString(Settings.PREF_KEYCAP_PROFILE,
+                MechanicalKeyRenderer.PROFILE_RAISED);
+        final String effect = prefs.getString(Settings.PREF_RGB_EFFECT, "static");
+        final boolean mechanical = !MechanicalKeyRenderer.PROFILE_CLASSIC.equals(profile);
+        final boolean effectEnabled = mechanical && !"off".equals(effect);
+        final boolean animated = "rainbow".equals(effect) || "breathing".equals(effect)
+                || "wave".equals(effect);
+        setPreferenceEnabled(Settings.PREF_RGB_EFFECT, mechanical);
+        setPreferenceEnabled(Settings.PREF_RGB_BRIGHTNESS, effectEnabled);
+        setPreferenceEnabled(Settings.PREF_RGB_SPEED, effectEnabled && animated);
     }
 
     private void setupKeyboardHeightSettings() {
@@ -187,6 +207,49 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
             public void writeDefaultValue(final String key) {
                 Settings.removeKeyboardColor(prefs);
             }
+        });
+    }
+
+    private void setupRgbSettings() {
+        setupRgbSlider(Settings.PREF_RGB_BRIGHTNESS, 75);
+        setupRgbSlider(Settings.PREF_RGB_SPEED, 100);
+    }
+
+    private void setupRgbSlider(final String preferenceKey, final int defaultValue) {
+        final SeekBarDialogPreference pref = (SeekBarDialogPreference)findPreference(preferenceKey);
+        if (pref == null) {
+            return;
+        }
+        final SharedPreferences prefs = getSharedPreferences();
+        final Resources res = getResources();
+        pref.setInterface(new SeekBarDialogPreference.ValueProxy() {
+            @Override
+            public int readValue(final String key) {
+                return prefs.getInt(key, defaultValue);
+            }
+
+            @Override
+            public int readDefaultValue(final String key) {
+                return defaultValue;
+            }
+
+            @Override
+            public void writeValue(final int value, final String key) {
+                prefs.edit().putInt(key, value).apply();
+            }
+
+            @Override
+            public void writeDefaultValue(final String key) {
+                prefs.edit().remove(key).apply();
+            }
+
+            @Override
+            public String getValueText(final int value) {
+                return res.getString(R.string.abbreviation_unit_percent, value);
+            }
+
+            @Override
+            public void feedbackValue(final int value) {}
         });
     }
 }

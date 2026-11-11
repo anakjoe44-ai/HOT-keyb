@@ -13,7 +13,9 @@ native Android input-method engine and adds a lightweight Canvas-rendered keycap
 
 In **Settings → Appearance**, choose one of six mechanical colorways and select Classic 2D,
 Rounded, Raised Mechanical, or Sculpted Mechanical keycaps. Theme and profile changes are
-stored locally and update the active keyboard without restarting the app.
+stored locally and update the active keyboard without restarting the app. RGB lighting can be
+turned off or set to Static, Rainbow, Breathing, Gradient, Wave, or Reactive; brightness and
+animation speed are adjustable. Animated modes redraw only while the keyboard is visible.
 
 Features:
 - Small size (<1MB)
@@ -23,6 +25,7 @@ Features:
 - Delete swipe
 - Custom theme colors
 - Six mechanical colorways with selectable raised keycap profiles
+- Optional RGB lighting effects with brightness and speed controls
 - Minimal permissions (only Vibrate)
 - Ads-free
 

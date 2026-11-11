@@ -37,6 +37,27 @@
         android:entries="@array/keycap_profile_names"
         android:entryValues="@array/keycap_profile_ids"
         android:defaultValue="raised" />
+    <PreferenceCategory android:title="@string/settings_rgb_lighting">
+        <ListPreference
+            android:key="pref_rgb_effect"
+            android:title="@string/settings_rgb_effect"
+            android:summary="@string/settings_rgb_effect_summary"
+            android:entries="@array/rgb_effect_names"
+            android:entryValues="@array/rgb_effect_ids"
+            android:defaultValue="static" />
+        <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+            android:key="pref_rgb_brightness"
+            android:title="@string/settings_rgb_brightness"
+            latin:minValue="0"
+            latin:maxValue="100"
+            latin:stepValue="10" />
+        <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
+            android:key="pref_rgb_speed"
+            android:title="@string/settings_rgb_speed"
+            latin:minValue="25"
+            latin:maxValue="200"
+            latin:stepValue="25" />
+    </PreferenceCategory>
     <rkr.simplekeyboard.inputmethod.latin.settings.ColorDialogPreference
         android:key="pref_keyboard_color"
         android:title="@string/keyboard_color" />

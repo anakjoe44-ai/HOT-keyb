@@ -76,6 +76,7 @@ import rkr.simplekeyboard.inputmethod.latin.utils.TypefaceUtils;
  * @attr ref R.styleable#Keyboard_Key_keyPreviewTextColor
  */
 public class KeyboardView extends View {
+    private static final long RGB_FRAME_DELAY_MS = 40L;
     // XML attributes
     private final KeyVisualAttributes mKeyVisualAttributes;
     // Default keyLabelFlags from {@link KeyboardTheme}.
@@ -122,12 +123,26 @@ public class KeyboardView extends View {
                 public void onSharedPreferenceChanged(final SharedPreferences preferences,
                         final String key) {
                     if (Settings.PREF_MECHANICAL_THEME.equals(key)
-                            || Settings.PREF_KEYCAP_PROFILE.equals(key)) {
+                            || Settings.PREF_KEYCAP_PROFILE.equals(key)
+                            || Settings.PREF_RGB_EFFECT.equals(key)
+                            || Settings.PREF_RGB_BRIGHTNESS.equals(key)
+                            || Settings.PREF_RGB_SPEED.equals(key)) {
                         mMechanicalKeyRenderer.update(preferences);
                         invalidateAllKeys();
+                        updateRgbAnimationLoop();
                     }
                 }
             };
+    private final Runnable mRgbAnimationFrame = new Runnable() {
+        @Override
+        public void run() {
+            if (!isRgbAnimationVisible()) {
+                return;
+            }
+            invalidateAllKeys();
+            postDelayed(this, RGB_FRAME_DELAY_MS);
+        }
+    };
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.keyboardViewStyle);
@@ -192,6 +207,7 @@ public class KeyboardView extends View {
         mCustomColor = Settings.readKeyboardColor(prefs, getContext());
         mTheme = Settings.getKeyboardTheme(getContext());
         mMechanicalKeyRenderer.update(prefs);
+        updateRgbAnimationLoop();
         invalidateAllKeys();
         requestLayout();
     }
@@ -219,6 +235,18 @@ public class KeyboardView extends View {
 
     protected final boolean isMechanicalRenderingEnabled() {
         return mMechanicalKeyRenderer.isEnabled();
+    }
+
+    private boolean isRgbAnimationVisible() {
+        return isAttachedToWindow() && isShown() && mKeyboard != null
+                && mMechanicalKeyRenderer.isAnimationActive();
+    }
+
+    private void updateRgbAnimationLoop() {
+        removeCallbacks(mRgbAnimationFrame);
+        if (isRgbAnimationVisible()) {
+            postDelayed(mRgbAnimationFrame, RGB_FRAME_DELAY_MS);
+        }
     }
 
     @Override
@@ -371,7 +399,8 @@ public class KeyboardView extends View {
     protected void onDrawKeyBackground(final Key key, final Canvas canvas,
             final Drawable background) {
         if (mMechanicalKeyRenderer.isEnabled()) {
-            mMechanicalKeyRenderer.drawKey(canvas, key, background.getState());
+            mMechanicalKeyRenderer.drawKey(canvas, key, background.getState(),
+                    mKeyboard.mOccupiedWidth);
             return;
         }
         final int keyWidth = key.getWidth();
@@ -567,10 +596,24 @@ public class KeyboardView extends View {
         super.onAttachedToWindow();
         mDevicePreferences.registerOnSharedPreferenceChangeListener(mMechanicalPreferenceListener);
         mMechanicalKeyRenderer.update(mDevicePreferences);
+        updateRgbAnimationLoop();
+    }
+
+    @Override
+    protected void onWindowVisibilityChanged(final int visibility) {
+        super.onWindowVisibilityChanged(visibility);
+        updateRgbAnimationLoop();
+    }
+
+    @Override
+    protected void onVisibilityChanged(final View changedView, final int visibility) {
+        super.onVisibilityChanged(changedView, visibility);
+        updateRgbAnimationLoop();
     }
 
     @Override
     protected void onDetachedFromWindow() {
+        removeCallbacks(mRgbAnimationFrame);
         mDevicePreferences.unregisterOnSharedPreferenceChangeListener(mMechanicalPreferenceListener);
         super.onDetachedFromWindow();
         freeOffscreenBuffer();
