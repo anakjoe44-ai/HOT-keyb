@@ -44,6 +44,14 @@
     <string name="settings_rgb_effect_summary">Choose an effect or turn lighting off; effects run only while the keyboard is visible</string>
     <string name="settings_rgb_brightness">Lighting brightness</string>
     <string name="settings_rgb_speed">Animation speed</string>
+    <string name="settings_toolbar_category">Keyboard toolbar</string>
+    <string name="settings_toolbar_tools">Visible toolbar buttons</string>
+    <string name="settings_toolbar_tools_summary">Choose which quick actions appear above the keys</string>
+    <string name="settings_toolbar_first_tool">Move button to the front</string>
+    <string name="settings_toolbar_first_tool_summary">Choose the first button in the scrollable toolbar</string>
+    <string name="toolbar_action_paste">Paste</string>
+    <string name="toolbar_action_symbols">Symbols</string>
+    <string name="toolbar_action_settings">Settings</string>
 
     <!-- Units abbreviation for the duration (milliseconds) [CHAR LIMIT=10] -->
     <string name="abbreviation_unit_milliseconds"><xliff:g id="MILLISECONDS">%s</xliff:g>ms</string>

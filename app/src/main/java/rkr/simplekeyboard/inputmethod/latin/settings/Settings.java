@@ -65,6 +65,8 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_RGB_EFFECT = "pref_rgb_effect";
     public static final String PREF_RGB_BRIGHTNESS = "pref_rgb_brightness";
     public static final String PREF_RGB_SPEED = "pref_rgb_speed";
+    public static final String PREF_TOOLBAR_TOOLS = "pref_toolbar_tools";
+    public static final String PREF_TOOLBAR_FIRST_TOOL = "pref_toolbar_first_tool";
     public static final String PREF_SHOW_SPECIAL_CHARS = "pref_show_special_chars";
     public static final String PREF_SHOW_NUMBER_ROW = "pref_show_number_row";
     public static final String PREF_SPACE_SWIPE = "pref_space_swipe";

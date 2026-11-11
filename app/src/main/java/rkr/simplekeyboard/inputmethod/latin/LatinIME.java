@@ -56,10 +56,12 @@ import rkr.simplekeyboard.inputmethod.compat.EditorInfoCompatUtils;
 import rkr.simplekeyboard.inputmethod.compat.PreferenceManagerCompat;
 import rkr.simplekeyboard.inputmethod.event.Event;
 import rkr.simplekeyboard.inputmethod.event.InputTransaction;
+import rkr.simplekeyboard.inputmethod.R;
 import rkr.simplekeyboard.inputmethod.keyboard.Keyboard;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardActionListener;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardId;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardSwitcher;
+import rkr.simplekeyboard.inputmethod.keyboard.KeyboardToolbarView;
 import rkr.simplekeyboard.inputmethod.keyboard.MainKeyboardView;
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
 import rkr.simplekeyboard.inputmethod.latin.define.DebugFlags;
@@ -320,7 +322,24 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     @Override
     public View onCreateInputView() {
-        return mKeyboardSwitcher.onCreateInputView();
+        final View inputView = mKeyboardSwitcher.onCreateInputView();
+        final KeyboardToolbarView toolbar = (KeyboardToolbarView)inputView.findViewById(
+                R.id.keyboard_toolbar);
+        if (toolbar != null) {
+            toolbar.setActionListener(new KeyboardToolbarView.ActionListener() {
+                @Override
+                public void onToolbarAction(final String action) {
+                    if (KeyboardToolbarView.ACTION_PASTE.equals(action)) {
+                        onCodeInput(Constants.CODE_PASTE, 0, 0, false);
+                    } else if (KeyboardToolbarView.ACTION_SYMBOLS.equals(action)) {
+                        onCodeInput(Constants.CODE_SYMBOL_SHIFT, 0, 0, false);
+                    } else if (KeyboardToolbarView.ACTION_SETTINGS.equals(action)) {
+                        launchSettings();
+                    }
+                }
+            });
+        }
+        return inputView;
     }
 
     @Override
@@ -548,7 +567,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             outInsets.visibleTopInsets = inputHeight;
             return;
         }
-        final int visibleTopY = inputHeight - visibleKeyboardView.getHeight();
+        final View toolbar = mInputView.findViewById(R.id.keyboard_toolbar);
+        final int toolbarHeight = toolbar != null && toolbar.isShown() ? toolbar.getHeight() : 0;
+        final int visibleTopY = Math.max(0,
+                inputHeight - visibleKeyboardView.getHeight() - toolbarHeight);
         // Need to set expanded touchable region only if a keyboard view is being shown.
         if (visibleKeyboardView.isShown()) {
             final int touchLeft = 0;

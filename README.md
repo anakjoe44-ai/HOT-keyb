@@ -17,6 +17,10 @@ stored locally and update the active keyboard without restarting the app. RGB li
 turned off or set to Static, Rainbow, Breathing, Gradient, Wave, or Reactive; brightness and
 animation speed are adjustable. Animated modes redraw only while the keyboard is visible.
 
+The scrollable toolbar above the keys currently provides Paste, Symbols, and Settings. Choose
+which buttons are visible and which comes first in **Settings → Appearance**. Clipboard text is
+read only when Paste is explicitly tapped; Hotkey does not collect clipboard history yet.
+
 Features:
 - Small size (<1MB)
 - Adjustable keyboard height for more screen space
@@ -26,6 +30,7 @@ Features:
 - Custom theme colors
 - Six mechanical colorways with selectable raised keycap profiles
 - Optional RGB lighting effects with brightness and speed controls
+- Scrollable quick-action toolbar with configurable visible actions
 - Minimal permissions (only Vibrate)
 - Ads-free
 

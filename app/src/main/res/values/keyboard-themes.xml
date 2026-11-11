@@ -102,4 +102,19 @@
         <item>wave</item>
         <item>reactive</item>
     </string-array>
+    <string-array name="toolbar_tool_names">
+        <item>@string/toolbar_action_paste</item>
+        <item>@string/toolbar_action_symbols</item>
+        <item>@string/toolbar_action_settings</item>
+    </string-array>
+    <string-array name="toolbar_tool_ids" translatable="false">
+        <item>paste</item>
+        <item>symbols</item>
+        <item>settings</item>
+    </string-array>
+    <string-array name="default_toolbar_tools" translatable="false">
+        <item>paste</item>
+        <item>symbols</item>
+        <item>settings</item>
+    </string-array>
 </resources>

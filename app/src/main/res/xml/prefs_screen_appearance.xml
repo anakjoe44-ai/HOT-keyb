@@ -37,6 +37,22 @@
         android:entries="@array/keycap_profile_names"
         android:entryValues="@array/keycap_profile_ids"
         android:defaultValue="raised" />
+    <PreferenceCategory android:title="@string/settings_toolbar_category">
+        <MultiSelectListPreference
+            android:key="pref_toolbar_tools"
+            android:title="@string/settings_toolbar_tools"
+            android:summary="@string/settings_toolbar_tools_summary"
+            android:entries="@array/toolbar_tool_names"
+            android:entryValues="@array/toolbar_tool_ids"
+            android:defaultValue="@array/default_toolbar_tools" />
+        <ListPreference
+            android:key="pref_toolbar_first_tool"
+            android:title="@string/settings_toolbar_first_tool"
+            android:summary="@string/settings_toolbar_first_tool_summary"
+            android:entries="@array/toolbar_tool_names"
+            android:entryValues="@array/toolbar_tool_ids"
+            android:defaultValue="paste" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_rgb_lighting">
         <ListPreference
             android:key="pref_rgb_effect"
