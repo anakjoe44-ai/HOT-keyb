@@ -104,17 +104,32 @@
     </string-array>
     <string-array name="toolbar_tool_names">
         <item>@string/toolbar_action_paste</item>
+        <item>@string/toolbar_action_clipboard</item>
         <item>@string/toolbar_action_symbols</item>
         <item>@string/toolbar_action_settings</item>
     </string-array>
     <string-array name="toolbar_tool_ids" translatable="false">
         <item>paste</item>
+        <item>clipboard</item>
         <item>symbols</item>
         <item>settings</item>
     </string-array>
     <string-array name="default_toolbar_tools" translatable="false">
         <item>paste</item>
+        <item>clipboard</item>
         <item>symbols</item>
         <item>settings</item>
+    </string-array>
+    <string-array name="clipboard_retention_names">
+        <item>@string/clipboard_retention_one_day</item>
+        <item>@string/clipboard_retention_seven_days</item>
+        <item>@string/clipboard_retention_thirty_days</item>
+        <item>@string/clipboard_retention_forever</item>
+    </string-array>
+    <string-array name="clipboard_retention_ids" translatable="false">
+        <item>1</item>
+        <item>7</item>
+        <item>30</item>
+        <item>never</item>
     </string-array>
 </resources>

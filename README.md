@@ -17,9 +17,12 @@ stored locally and update the active keyboard without restarting the app. RGB li
 turned off or set to Static, Rainbow, Breathing, Gradient, Wave, or Reactive; brightness and
 animation speed are adjustable. Animated modes redraw only while the keyboard is visible.
 
-The scrollable toolbar above the keys currently provides Paste, Symbols, and Settings. Choose
-which buttons are visible and which comes first in **Settings → Appearance**. Clipboard text is
-read only when Paste is explicitly tapped; Hotkey does not collect clipboard history yet.
+The scrollable toolbar above the keys provides Paste, Clipboard, Symbols, and Settings. Choose
+which buttons are visible and which comes first in **Settings → Appearance**. Paste reads the
+current system clip only when tapped. The separate Clipboard manager is off by default; when
+enabled, it saves plain text only after you tap **Add current clip**. History stays in the app's
+no-backup storage, is never monitored in the background, and supports retention, pinning, copying,
+deleting, and clearing. Password/private fields and clips marked sensitive are excluded.
 
 Features:
 - Small size (<1MB)
@@ -31,6 +34,7 @@ Features:
 - Six mechanical colorways with selectable raised keycap profiles
 - Optional RGB lighting effects with brightness and speed controls
 - Scrollable quick-action toolbar with configurable visible actions
+- Opt-in clipboard history with explicit capture, retention, pinning, and local-only storage
 - Minimal permissions (only Vibrate)
 - Ads-free
 

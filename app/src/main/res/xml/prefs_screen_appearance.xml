@@ -53,6 +53,20 @@
             android:entryValues="@array/toolbar_tool_ids"
             android:defaultValue="paste" />
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/settings_clipboard_title">
+        <SwitchPreference
+            android:key="pref_clipboard_history_enabled"
+            android:title="@string/settings_clipboard_enabled"
+            android:summary="@string/settings_clipboard_enabled_summary"
+            android:defaultValue="false" />
+        <ListPreference
+            android:key="pref_clipboard_retention"
+            android:title="@string/settings_clipboard_retention"
+            android:summary="@string/settings_clipboard_retention_summary"
+            android:entries="@array/clipboard_retention_names"
+            android:entryValues="@array/clipboard_retention_ids"
+            android:defaultValue="7" />
+    </PreferenceCategory>
     <PreferenceCategory android:title="@string/settings_rgb_lighting">
         <ListPreference
             android:key="pref_rgb_effect"

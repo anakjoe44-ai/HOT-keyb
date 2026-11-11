@@ -37,6 +37,7 @@ import rkr.simplekeyboard.inputmethod.latin.settings.Settings;
 /** Responsive, horizontally scrollable quick-action strip above the key rows. */
 public final class KeyboardToolbarView extends HorizontalScrollView {
     public static final String ACTION_PASTE = "paste";
+    public static final String ACTION_CLIPBOARD = "clipboard";
     public static final String ACTION_SYMBOLS = "symbols";
     public static final String ACTION_SETTINGS = "settings";
 
@@ -45,9 +46,9 @@ public final class KeyboardToolbarView extends HorizontalScrollView {
     }
 
     private static final String[] ACTION_ORDER = {
-            ACTION_PASTE, ACTION_SYMBOLS, ACTION_SETTINGS
+            ACTION_PASTE, ACTION_CLIPBOARD, ACTION_SYMBOLS, ACTION_SETTINGS
     };
-    private static final String[] ACTION_GLYPHS = {"↧", "123", "⚙"};
+    private static final String[] ACTION_GLYPHS = {"↧", "▤", "123", "⚙"};
     private static final int TOOLBAR_HEIGHT_DP = 52;
     private static final int CHIP_WIDTH_DP = 72;
     private static final int CHIP_GAP_DP = 6;

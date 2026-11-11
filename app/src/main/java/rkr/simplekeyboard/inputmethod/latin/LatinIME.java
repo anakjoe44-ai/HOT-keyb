@@ -23,6 +23,9 @@ package rkr.simplekeyboard.inputmethod.latin;
 
 import android.app.AlertDialog;
 import android.content.BroadcastReceiver;
+import android.content.ClipData;
+import android.content.ClipDescription;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -34,6 +37,7 @@ import android.os.Build;
 import android.os.Debug;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PersistableBundle;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Log;
@@ -46,6 +50,7 @@ import android.view.ViewGroup.LayoutParams;
 import android.view.Window;
 import android.view.WindowInsetsController;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Toast;
 
 import java.io.FileDescriptor;
 import java.io.PrintWriter;
@@ -57,12 +62,14 @@ import rkr.simplekeyboard.inputmethod.compat.PreferenceManagerCompat;
 import rkr.simplekeyboard.inputmethod.event.Event;
 import rkr.simplekeyboard.inputmethod.event.InputTransaction;
 import rkr.simplekeyboard.inputmethod.R;
+import rkr.simplekeyboard.inputmethod.keyboard.ClipboardHistoryView;
 import rkr.simplekeyboard.inputmethod.keyboard.Keyboard;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardActionListener;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardId;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardSwitcher;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardToolbarView;
 import rkr.simplekeyboard.inputmethod.keyboard.MainKeyboardView;
+import rkr.simplekeyboard.inputmethod.latin.utils.InputTypeUtils;
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
 import rkr.simplekeyboard.inputmethod.latin.define.DebugFlags;
 import rkr.simplekeyboard.inputmethod.latin.inputlogic.InputLogic;
@@ -93,6 +100,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     // TODO: Move these {@link View}s to {@link KeyboardSwitcher}.
     private View mInputView;
+    private ClipboardHistoryStore mClipboardHistoryStore;
 
     private RichInputMethodManager mRichImm;
     final KeyboardSwitcher mKeyboardSwitcher;
@@ -325,12 +333,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         final View inputView = mKeyboardSwitcher.onCreateInputView();
         final KeyboardToolbarView toolbar = (KeyboardToolbarView)inputView.findViewById(
                 R.id.keyboard_toolbar);
+        final ClipboardHistoryView clipboardPanel = (ClipboardHistoryView)inputView.findViewById(
+                R.id.clipboard_history_panel);
         if (toolbar != null) {
             toolbar.setActionListener(new KeyboardToolbarView.ActionListener() {
                 @Override
                 public void onToolbarAction(final String action) {
                     if (KeyboardToolbarView.ACTION_PASTE.equals(action)) {
                         onCodeInput(Constants.CODE_PASTE, 0, 0, false);
+                    } else if (KeyboardToolbarView.ACTION_CLIPBOARD.equals(action)) {
+                        showClipboardHistory();
                     } else if (KeyboardToolbarView.ACTION_SYMBOLS.equals(action)) {
                         onCodeInput(Constants.CODE_SYMBOL_SHIFT, 0, 0, false);
                     } else if (KeyboardToolbarView.ACTION_SETTINGS.equals(action)) {
@@ -339,7 +351,176 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
                 }
             });
         }
+        if (clipboardPanel != null) {
+            clipboardPanel.setListener(new ClipboardHistoryView.Listener() {
+                @Override
+                public void onSaveCurrentClip() {
+                    saveCurrentClipboard();
+                }
+
+                @Override
+                public void onPasteEntry(final ClipboardHistoryStore.Entry entry) {
+                    pasteClipboardHistoryEntry(entry);
+                }
+
+                @Override
+                public void onCopyEntry(final ClipboardHistoryStore.Entry entry) {
+                    copyClipboardHistoryEntry(entry);
+                }
+
+                @Override
+                public void onPinEntry(final ClipboardHistoryStore.Entry entry,
+                        final boolean pinned) {
+                    getClipboardHistoryStore().setPinned(entry.id, pinned);
+                    refreshClipboardHistoryPanel();
+                }
+
+                @Override
+                public void onDeleteEntry(final ClipboardHistoryStore.Entry entry) {
+                    getClipboardHistoryStore().delete(entry.id);
+                    refreshClipboardHistoryPanel();
+                }
+
+                @Override
+                public void onClearHistory() {
+                    getClipboardHistoryStore().clear();
+                    refreshClipboardHistoryPanel();
+                }
+
+                @Override
+                public void onCloseClipboardHistory() {
+                    hideClipboardHistory();
+                }
+
+                @Override
+                public void onOpenClipboardSettings() {
+                    hideClipboardHistory();
+                    launchSettings();
+                }
+            });
+        }
         return inputView;
+    }
+
+    private ClipboardHistoryStore getClipboardHistoryStore() {
+        if (mClipboardHistoryStore == null) {
+            mClipboardHistoryStore = new ClipboardHistoryStore(this);
+        }
+        return mClipboardHistoryStore;
+    }
+
+    private boolean isClipboardHistoryAllowedInCurrentField() {
+        final EditorInfo editorInfo = getCurrentInputEditorInfo();
+        if (editorInfo == null) {
+            return false;
+        }
+        final int inputType = editorInfo.inputType;
+        return (editorInfo.imeOptions & EditorInfo.IME_FLAG_NO_PERSONALIZED_LEARNING) == 0
+                && !InputTypeUtils.isPasswordInputType(inputType)
+                && !InputTypeUtils.isVisiblePasswordInputType(inputType);
+    }
+
+    private void showClipboardHistory() {
+        if (!isClipboardHistoryAllowedInCurrentField()) {
+            showClipboardToast(R.string.clipboard_password_field_blocked);
+            return;
+        }
+        if (!(mInputView instanceof InputView)) {
+            return;
+        }
+        refreshClipboardHistoryPanel();
+        ((InputView)mInputView).showClipboardHistory();
+    }
+
+    private void hideClipboardHistory() {
+        if (mInputView instanceof InputView) {
+            ((InputView)mInputView).hideClipboardHistory();
+        }
+    }
+
+    private void refreshClipboardHistoryPanel() {
+        if (!(mInputView instanceof InputView)) {
+            return;
+        }
+        final ClipboardHistoryView panel = (ClipboardHistoryView)mInputView.findViewById(
+                R.id.clipboard_history_panel);
+        if (panel != null) {
+            final ClipboardHistoryStore store = getClipboardHistoryStore();
+            panel.showEntries(store.getEntries(), store.isEnabled());
+        }
+    }
+
+    private void saveCurrentClipboard() {
+        if (!isClipboardHistoryAllowedInCurrentField()) {
+            showClipboardToast(R.string.clipboard_password_field_blocked);
+            return;
+        }
+        final ClipboardHistoryStore store = getClipboardHistoryStore();
+        if (!store.isEnabled()) {
+            showClipboardToast(R.string.clipboard_history_disabled_toast);
+            refreshClipboardHistoryPanel();
+            return;
+        }
+        final ClipboardManager clipboard = (ClipboardManager)getSystemService(
+                Context.CLIPBOARD_SERVICE);
+        if (clipboard == null || !clipboard.hasPrimaryClip()) {
+            showClipboardToast(R.string.clipboard_no_plain_text);
+            return;
+        }
+        final ClipData clipData = clipboard.getPrimaryClip();
+        if (clipData == null || clipData.getItemCount() != 1) {
+            showClipboardToast(R.string.clipboard_no_plain_text);
+            return;
+        }
+        final ClipDescription description = clipData.getDescription();
+        if (description != null) {
+            final PersistableBundle extras = description.getExtras();
+            if (extras != null && extras.getBoolean("android.content.extra.IS_SENSITIVE", false)) {
+                showClipboardToast(R.string.clipboard_sensitive_not_saved);
+                return;
+            }
+        }
+        final CharSequence clipText = clipData.getItemAt(0).getText();
+        if (clipText == null || clipText.length() == 0) {
+            showClipboardToast(R.string.clipboard_no_plain_text);
+            return;
+        }
+        if (clipText.length() > ClipboardHistoryStore.MAX_TEXT_LENGTH) {
+            showClipboardToast(R.string.clipboard_too_long);
+            return;
+        }
+        if (store.saveText(clipText.toString())) {
+            refreshClipboardHistoryPanel();
+            showClipboardToast(R.string.clipboard_saved);
+        } else {
+            showClipboardToast(R.string.clipboard_save_failed);
+        }
+    }
+
+    private void pasteClipboardHistoryEntry(final ClipboardHistoryStore.Entry entry) {
+        if (!isClipboardHistoryAllowedInCurrentField()) {
+            showClipboardToast(R.string.clipboard_password_field_blocked);
+            return;
+        }
+        onTextInput(entry.text);
+        hideClipboardHistory();
+    }
+
+    private void copyClipboardHistoryEntry(final ClipboardHistoryStore.Entry entry) {
+        final ClipboardManager clipboard = (ClipboardManager)getSystemService(
+                Context.CLIPBOARD_SERVICE);
+        if (clipboard != null) {
+            final ClipData clip = ClipData.newPlainText(
+                    getString(R.string.clipboard_panel_title), entry.text);
+            final PersistableBundle extras = new PersistableBundle();
+            extras.putBoolean("android.content.extra.IS_SENSITIVE", true);
+            clip.getDescription().setExtras(extras);
+            clipboard.setPrimaryClip(clip);
+        }
+    }
+
+    private void showClipboardToast(final int messageRes) {
+        Toast.makeText(this, messageRes, Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -398,6 +579,7 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
 
     void onStartInputViewInternal(final EditorInfo editorInfo, final boolean restarting) {
         super.onStartInputView(editorInfo, restarting);
+        hideClipboardHistory();
 
         // Switch to the null consumer to handle cases leading to early exit below, for which we
         // also wouldn't be consuming gesture data.
@@ -560,7 +742,10 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
             return;
         }
         final int inputHeight = mInputView.getHeight();
-        if (isImeSuppressedByHardwareKeyboard() && !visibleKeyboardView.isShown()) {
+        final View clipboardPanel = mInputView.findViewById(R.id.clipboard_history_panel);
+        final boolean clipboardPanelShown = clipboardPanel != null && clipboardPanel.isShown();
+        if (isImeSuppressedByHardwareKeyboard() && !visibleKeyboardView.isShown()
+                && !clipboardPanelShown) {
             // If there is a hardware keyboard and a visible software keyboard view has been hidden,
             // no visual element will be shown on the screen.
             outInsets.contentTopInsets = inputHeight;
@@ -569,13 +754,16 @@ public class LatinIME extends InputMethodService implements KeyboardActionListen
         }
         final View toolbar = mInputView.findViewById(R.id.keyboard_toolbar);
         final int toolbarHeight = toolbar != null && toolbar.isShown() ? toolbar.getHeight() : 0;
-        final int visibleTopY = Math.max(0,
-                inputHeight - visibleKeyboardView.getHeight() - toolbarHeight);
+        final int visibleTopY = clipboardPanelShown
+                ? Math.max(0, inputHeight - clipboardPanel.getHeight())
+                : Math.max(0, inputHeight - visibleKeyboardView.getHeight() - toolbarHeight);
         // Need to set expanded touchable region only if a keyboard view is being shown.
-        if (visibleKeyboardView.isShown()) {
+        if (visibleKeyboardView.isShown() || clipboardPanelShown) {
             final int touchLeft = 0;
-            final int touchTop = mKeyboardSwitcher.isShowingMoreKeysPanel() ? 0 : visibleTopY;
-            final int touchRight = visibleKeyboardView.getWidth();
+            final int touchTop = clipboardPanelShown ? visibleTopY
+                    : (mKeyboardSwitcher.isShowingMoreKeysPanel() ? 0 : visibleTopY);
+            final int touchRight = clipboardPanelShown ? mInputView.getWidth()
+                    : visibleKeyboardView.getWidth();
             final int touchBottom = inputHeight
                     // Extend touchable region below the keyboard.
                     + EXTENDED_TOUCHABLE_REGION_HEIGHT;

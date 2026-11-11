@@ -25,6 +25,7 @@
     android:layout_height="wrap_content"
     style="?attr/inputViewStyle">
     <LinearLayout
+        android:id="@+id/keyboard_content"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
@@ -39,4 +40,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </LinearLayout>
+    <rkr.simplekeyboard.inputmethod.keyboard.ClipboardHistoryView
+        android:id="@+id/clipboard_history_panel"
+        android:layout_width="match_parent"
+        android:layout_height="320dp"
+        android:layout_gravity="bottom"
+        android:visibility="gone" />
 </rkr.simplekeyboard.inputmethod.latin.InputView>

@@ -19,10 +19,39 @@ package rkr.simplekeyboard.inputmethod.latin;
 
 import android.content.Context;
 import android.util.AttributeSet;
+import android.view.View;
 import android.widget.FrameLayout;
+
+import rkr.simplekeyboard.inputmethod.R;
+import rkr.simplekeyboard.inputmethod.keyboard.ClipboardHistoryView;
 
 public final class InputView extends FrameLayout {
     public InputView(final Context context, final AttributeSet attrs) {
         super(context, attrs, 0);
+    }
+
+    public void showClipboardHistory() {
+        final View keyboardContent = findViewById(R.id.keyboard_content);
+        final ClipboardHistoryView clipboardPanel = findViewById(R.id.clipboard_history_panel);
+        if (keyboardContent != null && clipboardPanel != null) {
+            keyboardContent.setVisibility(View.GONE);
+            clipboardPanel.setVisibility(View.VISIBLE);
+            requestLayout();
+        }
+    }
+
+    public void hideClipboardHistory() {
+        final View keyboardContent = findViewById(R.id.keyboard_content);
+        final ClipboardHistoryView clipboardPanel = findViewById(R.id.clipboard_history_panel);
+        if (keyboardContent != null && clipboardPanel != null) {
+            clipboardPanel.setVisibility(View.GONE);
+            keyboardContent.setVisibility(View.VISIBLE);
+            requestLayout();
+        }
+    }
+
+    public boolean isClipboardHistoryShown() {
+        final ClipboardHistoryView clipboardPanel = findViewById(R.id.clipboard_history_panel);
+        return clipboardPanel != null && clipboardPanel.getVisibility() == View.VISIBLE;
     }
 }
