@@ -31,7 +31,7 @@ jobs:
       - name: Set up Android SDK
         uses: android-actions/setup-android@v4
         with:
-          packages: 'platform-tools platforms;android-37'
+          packages: 'platform-tools platforms;android-37.0'
 
       # Match the version pinned in gradle/wrapper/gradle-wrapper.properties.
       # This project omits gradle-wrapper.jar, so use the provisioned Gradle binary directly.

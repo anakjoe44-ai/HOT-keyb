@@ -1,9 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    compileSdk {
+        version = release(37) {
+            it.minorApiLevel = 0
+        }
+    }
+
     defaultConfig {
         applicationId "rkr.simplekeyboard.inputmethod"
-        compileSdk 37
         minSdkVersion 24
         targetSdkVersion 37
         versionCode 149
