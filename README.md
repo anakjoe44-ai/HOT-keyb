@@ -24,6 +24,10 @@ enabled, it saves plain text only after you tap **Add current clip**. History st
 no-backup storage, is never monitored in the background, and supports retention, pinning, copying,
 deleting, and clearing. Password/private fields and clips marked sensitive are excluded.
 
+In **Settings → Key press**, keep Android's system click or choose one of four short, locally
+synthesized mechanical sounds: soft, linear, clicky, or tactile. The existing sound switch and
+volume control still apply, and a Silent profile is also available.
+
 Features:
 - Small size (<1MB)
 - Adjustable keyboard height for more screen space
@@ -33,6 +37,7 @@ Features:
 - Custom theme colors
 - Six mechanical colorways with selectable raised keycap profiles
 - Optional RGB lighting effects with brightness and speed controls
+- Selectable system, soft, linear, clicky, tactile, and silent keypress sound profiles
 - Scrollable quick-action toolbar with configurable visible actions
 - Opt-in clipboard history with explicit capture, retention, pinning, and local-only storage
 - Minimal permissions (only Vibrate)

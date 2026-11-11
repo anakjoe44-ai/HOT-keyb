@@ -18,7 +18,9 @@
 package rkr.simplekeyboard.inputmethod.latin;
 
 import android.content.Context;
+import android.media.AudioAttributes;
 import android.media.AudioManager;
+import android.media.SoundPool;
 import android.os.Build;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
@@ -27,6 +29,7 @@ import android.view.View;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ConcurrentHashMap;
 
 import rkr.simplekeyboard.inputmethod.latin.common.Constants;
 import rkr.simplekeyboard.inputmethod.latin.settings.SettingsValues;
@@ -42,6 +45,10 @@ public final class AudioAndHapticFeedbackManager {
     private ExecutorService mBackgroundThread;
     private AudioManager mAudioManager;
     private Vibrator mVibrator;
+    private volatile SoundPool mMechanicalSoundPool;
+    private volatile int[] mMechanicalSoundIds = new int[0];
+    private final ConcurrentHashMap<Integer, Boolean> mLoadedSoundIds =
+            new ConcurrentHashMap<>();
 
     private SettingsValues mSettingsValues;
     private boolean mSoundOn;
@@ -67,6 +74,22 @@ public final class AudioAndHapticFeedbackManager {
         mBackgroundThread.execute(() -> {
             mAudioManager = (AudioManager) context.getSystemService(Context.AUDIO_SERVICE);
             mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+            final SoundPool soundPool = new SoundPool.Builder()
+                    .setMaxStreams(6)
+                    .setAudioAttributes(new AudioAttributes.Builder()
+                            .setUsage(AudioAttributes.USAGE_ASSISTANCE_SONIFICATION)
+                            .setContentType(AudioAttributes.CONTENT_TYPE_SONIFICATION)
+                            .build())
+                    .build();
+            soundPool.setOnLoadCompleteListener((pool, sampleId, status) ->
+                    mLoadedSoundIds.put(sampleId, status == 0));
+            mMechanicalSoundPool = soundPool;
+            mMechanicalSoundIds = new int[] {
+                    soundPool.load(context, rkr.simplekeyboard.inputmethod.R.raw.keypress_soft, 1),
+                    soundPool.load(context, rkr.simplekeyboard.inputmethod.R.raw.keypress_linear, 1),
+                    soundPool.load(context, rkr.simplekeyboard.inputmethod.R.raw.keypress_clicky, 1),
+                    soundPool.load(context, rkr.simplekeyboard.inputmethod.R.raw.keypress_tactile, 1)
+            };
         });
     }
 
@@ -89,6 +112,22 @@ public final class AudioAndHapticFeedbackManager {
         if (!mSoundOn) {
             return;
         }
+        final String profile = mSettingsValues.mKeypressSoundProfile;
+        if ("silent".equals(profile)) {
+            return;
+        }
+        final int profileIndex = mechanicalProfileIndex(profile);
+        if (profileIndex >= 0) {
+            final SoundPool soundPool = mMechanicalSoundPool;
+            final int[] soundIds = mMechanicalSoundIds;
+            if (soundPool != null && profileIndex < soundIds.length
+                    && mLoadedSoundIds.get(soundIds[profileIndex]) != null
+                    && mLoadedSoundIds.get(soundIds[profileIndex])) {
+                final float volume = mSettingsValues.mKeypressSoundVolume;
+                soundPool.play(soundIds[profileIndex], volume, volume, 1, 0, 1.0f);
+                return;
+            }
+        }
         final int sound;
         switch (code) {
         case Constants.CODE_DELETE:
@@ -105,6 +144,14 @@ public final class AudioAndHapticFeedbackManager {
             break;
         }
         playSoundEffect(sound, mSettingsValues.mKeypressSoundVolume);
+    }
+
+    private static int mechanicalProfileIndex(final String profile) {
+        if ("soft_mechanical".equals(profile)) return 0;
+        if ("linear_mechanical".equals(profile)) return 1;
+        if ("clicky_mechanical".equals(profile)) return 2;
+        if ("tactile_mechanical".equals(profile)) return 3;
+        return -1;
     }
 
     public void playSoundEffect(final int effectType, final float volume) {

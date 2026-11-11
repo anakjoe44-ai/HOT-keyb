@@ -56,6 +56,7 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_ENABLE_IME_SWITCH = "pref_enable_ime_switch";
     public static final String PREF_ENABLED_SUBTYPES = "pref_enabled_subtypes";
     public static final String PREF_KEYPRESS_SOUND_VOLUME = "pref_keypress_sound_volume";
+    public static final String PREF_KEYPRESS_SOUND_PROFILE = "pref_keypress_sound_profile";
     public static final String PREF_KEY_LONGPRESS_TIMEOUT = "pref_key_longpress_timeout";
     public static final String PREF_KEYBOARD_HEIGHT = "pref_keyboard_height";
     public static final String PREF_BOTTOM_OFFSET_PORTRAIT = "pref_bottom_offset_portrait";

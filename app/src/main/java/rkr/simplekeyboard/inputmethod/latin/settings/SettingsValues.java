@@ -55,6 +55,7 @@ public class SettingsValues {
 
     // Deduced settings
     public final float mKeypressSoundVolume;
+    public final String mKeypressSoundProfile;
     public final int mKeyPreviewPopupDismissDelay;
 
     // Debug settings
@@ -83,6 +84,7 @@ public class SettingsValues {
         // Compute other readable settings
         mKeyLongpressTimeout = Settings.readKeyLongpressTimeout(prefs, res);
         mKeypressSoundVolume = Settings.readKeypressSoundVolume(prefs);
+        mKeypressSoundProfile = prefs.getString(Settings.PREF_KEYPRESS_SOUND_PROFILE, "system");
         mKeyPreviewPopupDismissDelay = res.getInteger(R.integer.config_key_preview_linger_timeout);
         mKeyboardHeightScale = Settings.readKeyboardHeight(prefs, DEFAULT_SIZE_SCALE);
         mBottomOffsetPortrait = Settings.readBottomOffsetPortrait(prefs);

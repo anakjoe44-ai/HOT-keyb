@@ -28,6 +28,14 @@
         android:title="@string/sound_on_keypress"
         android:defaultValue="@bool/config_default_sound_enabled"
         android:persistent="true" />
+    <ListPreference
+        android:key="pref_keypress_sound_profile"
+        android:title="@string/keypress_sound_profile"
+        android:summary="@string/keypress_sound_profile_summary"
+        android:entries="@array/keypress_sound_profile_names"
+        android:entryValues="@array/keypress_sound_profile_ids"
+        android:defaultValue="system"
+        android:dependency="sound_on" />
     <rkr.simplekeyboard.inputmethod.latin.settings.SeekBarDialogPreference
         android:key="pref_keypress_sound_volume"
         android:title="@string/prefs_keypress_sound_volume_settings"

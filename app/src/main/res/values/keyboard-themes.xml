@@ -132,4 +132,20 @@
         <item>30</item>
         <item>never</item>
     </string-array>
+    <string-array name="keypress_sound_profile_names">
+        <item>@string/keypress_sound_system</item>
+        <item>@string/keypress_sound_soft</item>
+        <item>@string/keypress_sound_linear</item>
+        <item>@string/keypress_sound_clicky</item>
+        <item>@string/keypress_sound_tactile</item>
+        <item>@string/keypress_sound_silent</item>
+    </string-array>
+    <string-array name="keypress_sound_profile_ids" translatable="false">
+        <item>system</item>
+        <item>soft_mechanical</item>
+        <item>linear_mechanical</item>
+        <item>clicky_mechanical</item>
+        <item>tactile_mechanical</item>
+        <item>silent</item>
+    </string-array>
 </resources>

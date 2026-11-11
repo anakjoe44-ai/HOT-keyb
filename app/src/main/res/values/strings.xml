@@ -23,6 +23,14 @@
 
     <!-- Option to play back sound on keypress in soft keyboard -->
     <string name="sound_on_keypress">Sound on keypress</string>
+    <string name="keypress_sound_profile">Key sound profile</string>
+    <string name="keypress_sound_profile_summary">Choose an original mechanical click or keep the device sound</string>
+    <string name="keypress_sound_system">System</string>
+    <string name="keypress_sound_soft">Soft mechanical</string>
+    <string name="keypress_sound_linear">Linear mechanical</string>
+    <string name="keypress_sound_clicky">Clicky mechanical</string>
+    <string name="keypress_sound_tactile">Tactile mechanical</string>
+    <string name="keypress_sound_silent">Silent</string>
 
     <!-- Option to control whether or not to show a popup with a larger font on each key press. -->
     <string name="popup_on_keypress">Popup on keypress</string>
