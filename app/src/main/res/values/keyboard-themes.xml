@@ -55,4 +55,33 @@
         <item>@color/background_lxx_light</item>
         <item>@color/background_lxx_dark</item>
     </array>
+
+    <string-array name="mechanical_theme_names" translatable="false">
+        <item>@string/keyboard_theme_obsidian_neon</item>
+        <item>@string/keyboard_theme_cyber_purple</item>
+        <item>@string/keyboard_theme_emerald_matrix</item>
+        <item>@string/keyboard_theme_arctic_blue</item>
+        <item>@string/keyboard_theme_crimson_pulse</item>
+        <item>@string/keyboard_theme_titanium_silver</item>
+    </string-array>
+    <string-array name="mechanical_theme_ids" translatable="false">
+        <item>obsidian_neon</item>
+        <item>cyber_purple</item>
+        <item>emerald_matrix</item>
+        <item>arctic_blue</item>
+        <item>crimson_pulse</item>
+        <item>titanium_silver</item>
+    </string-array>
+    <string-array name="keycap_profile_names" translatable="false">
+        <item>Classic 2D</item>
+        <item>Rounded</item>
+        <item>Raised Mechanical</item>
+        <item>Sculpted Mechanical</item>
+    </string-array>
+    <string-array name="keycap_profile_ids" translatable="false">
+        <item>classic</item>
+        <item>rounded</item>
+        <item>raised</item>
+        <item>sculpted</item>
+    </string-array>
 </resources>

@@ -25,6 +25,7 @@ import android.os.Bundle;
 import android.preference.Preference;
 
 import rkr.simplekeyboard.inputmethod.R;
+import rkr.simplekeyboard.inputmethod.keyboard.MechanicalKeyRenderer;
 import rkr.simplekeyboard.inputmethod.keyboard.KeyboardTheme;
 
 /**
@@ -46,23 +47,27 @@ public final class AppearanceSettingsFragment extends SubScreenFragment {
         super.onResume();
 
         ThemeSettingsFragment.updateKeyboardThemeSummary(findPreference(Settings.SCREEN_THEME));
-
-        final Preference colorPreference = findPreference(Settings.PREF_KEYBOARD_COLOR);
-        if (colorPreference.isEnabled()) {
-            final SharedPreferences prefs = getSharedPreferences();
-            final KeyboardTheme theme = KeyboardTheme.getKeyboardTheme(prefs);
-            colorPreference.setEnabled(theme.mCustomColorSupport);
-        }
+        updateKeyboardColorPreference();
     }
 
     @Override
     public void onSharedPreferenceChanged(final SharedPreferences prefs, final String key) {
         if (KeyboardTheme.KEYBOARD_THEME_KEY.equals(key)) {
             ThemeSettingsFragment.updateKeyboardThemeSummary(findPreference(Settings.SCREEN_THEME));
-
-            final KeyboardTheme theme = KeyboardTheme.getKeyboardTheme(prefs);
-            setPreferenceEnabled(Settings.PREF_KEYBOARD_COLOR, theme.mCustomColorSupport);
         }
+        if (KeyboardTheme.KEYBOARD_THEME_KEY.equals(key)
+                || Settings.PREF_KEYCAP_PROFILE.equals(key)) {
+            updateKeyboardColorPreference();
+        }
+    }
+
+    private void updateKeyboardColorPreference() {
+        final SharedPreferences prefs = getSharedPreferences();
+        final KeyboardTheme theme = KeyboardTheme.getKeyboardTheme(prefs);
+        final String profile = prefs.getString(Settings.PREF_KEYCAP_PROFILE,
+                MechanicalKeyRenderer.PROFILE_RAISED);
+        setPreferenceEnabled(Settings.PREF_KEYBOARD_COLOR,
+                theme.mCustomColorSupport && MechanicalKeyRenderer.PROFILE_CLASSIC.equals(profile));
     }
 
     private void setupKeyboardHeightSettings() {

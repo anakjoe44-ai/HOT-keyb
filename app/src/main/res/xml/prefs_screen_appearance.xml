@@ -23,6 +23,20 @@
         android:fragment="rkr.simplekeyboard.inputmethod.latin.settings.ThemeSettingsFragment"
         android:key="screen_theme"
         android:title="@string/settings_screen_theme" />
+    <ListPreference
+        android:key="pref_mechanical_theme"
+        android:title="@string/settings_mechanical_palette"
+        android:summary="@string/settings_mechanical_palette_summary"
+        android:entries="@array/mechanical_theme_names"
+        android:entryValues="@array/mechanical_theme_ids"
+        android:defaultValue="obsidian_neon" />
+    <ListPreference
+        android:key="pref_keycap_profile"
+        android:title="@string/settings_keycap_profile"
+        android:summary="@string/settings_keycap_profile_summary"
+        android:entries="@array/keycap_profile_names"
+        android:entryValues="@array/keycap_profile_ids"
+        android:defaultValue="raised" />
     <rkr.simplekeyboard.inputmethod.latin.settings.ColorDialogPreference
         android:key="pref_keyboard_color"
         android:title="@string/keyboard_color" />

@@ -1,4 +1,4 @@
-# Simple Keyboard
+# Hotkey
 
 [![Crowdin](https://d322cqt584bo4o.cloudfront.net/simple-keyboard/localized.svg)](https://crowdin.com/project/simple-keyboard)
 
@@ -8,6 +8,13 @@
       
 ## About
 
+Hotkey is a personal-use mechanical keyboard fork of Simple Keyboard. It keeps the existing
+native Android input-method engine and adds a lightweight Canvas-rendered keycap treatment.
+
+In **Settings → Appearance**, choose one of six mechanical colorways and select Classic 2D,
+Rounded, Raised Mechanical, or Sculpted Mechanical keycaps. Theme and profile changes are
+stored locally and update the active keyboard without restarting the app.
+
 Features:
 - Small size (<1MB)
 - Adjustable keyboard height for more screen space
@@ -15,6 +22,7 @@ Features:
 - Swipe space to move pointer
 - Delete swipe
 - Custom theme colors
+- Six mechanical colorways with selectable raised keycap profiles
 - Minimal permissions (only Vibrate)
 - Ads-free
 

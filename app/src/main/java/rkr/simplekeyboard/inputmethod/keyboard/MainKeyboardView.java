@@ -590,7 +590,8 @@ public final class MainKeyboardView extends KeyboardView implements MoreKeysPane
         final float descent = paint.descent();
         final float textHeight = -paint.ascent() + descent;
         final float baseline = height / 2 + textHeight / 2;
-        paint.setColor(mLanguageOnSpacebarTextColor);
+        paint.setColor(isMechanicalRenderingEnabled()
+                ? getMechanicalMutedTextColor() : mLanguageOnSpacebarTextColor);
         paint.setAlpha(mLanguageOnSpacebarFinalAlpha);
         canvas.drawText(language, width / 2, baseline - descent, paint);
         paint.clearShadowLayer();

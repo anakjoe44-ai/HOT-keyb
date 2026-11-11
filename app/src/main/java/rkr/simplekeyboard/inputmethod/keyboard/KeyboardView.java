@@ -114,6 +114,20 @@ public class KeyboardView extends View {
     private final Canvas mOffscreenCanvas = new Canvas();
     private final Paint mPaint = new Paint();
     private final Paint.FontMetrics mFontMetrics = new Paint.FontMetrics();
+    private final MechanicalKeyRenderer mMechanicalKeyRenderer;
+    private final SharedPreferences mDevicePreferences;
+    private final SharedPreferences.OnSharedPreferenceChangeListener mMechanicalPreferenceListener =
+            new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(final SharedPreferences preferences,
+                        final String key) {
+                    if (Settings.PREF_MECHANICAL_THEME.equals(key)
+                            || Settings.PREF_KEYCAP_PROFILE.equals(key)) {
+                        mMechanicalKeyRenderer.update(preferences);
+                        invalidateAllKeys();
+                    }
+                }
+            };
 
     public KeyboardView(final Context context, final AttributeSet attrs) {
         this(context, attrs, R.attr.keyboardViewStyle);
@@ -121,6 +135,10 @@ public class KeyboardView extends View {
 
     public KeyboardView(final Context context, final AttributeSet attrs, final int defStyle) {
         super(context, attrs, defStyle);
+        mMechanicalKeyRenderer = new MechanicalKeyRenderer(
+                context.getResources().getDisplayMetrics());
+        mDevicePreferences = PreferenceManagerCompat.getDeviceSharedPreferences(context);
+        mMechanicalKeyRenderer.update(mDevicePreferences);
 
         final TypedArray keyboardViewAttr = context.obtainStyledAttributes(attrs,
                 R.styleable.KeyboardView, defStyle, R.style.KeyboardView);
@@ -170,9 +188,10 @@ public class KeyboardView extends View {
         final int keyHeight = keyboard.mMostCommonKeyHeight;
         mKeyDrawParams.updateParams(keyHeight, mKeyVisualAttributes);
         mKeyDrawParams.updateParams(keyHeight, keyboard.mKeyVisualAttributes);
-        final SharedPreferences prefs = PreferenceManagerCompat.getDeviceSharedPreferences(getContext());
+        final SharedPreferences prefs = mDevicePreferences;
         mCustomColor = Settings.readKeyboardColor(prefs, getContext());
         mTheme = Settings.getKeyboardTheme(getContext());
+        mMechanicalKeyRenderer.update(prefs);
         invalidateAllKeys();
         requestLayout();
     }
@@ -192,6 +211,14 @@ public class KeyboardView extends View {
 
     protected KeyDrawParams getKeyDrawParams() {
         return mKeyDrawParams;
+    }
+
+    protected final int getMechanicalMutedTextColor() {
+        return mMechanicalKeyRenderer.getMutedTextColor();
+    }
+
+    protected final boolean isMechanicalRenderingEnabled() {
+        return mMechanicalKeyRenderer.isEnabled();
     }
 
     @Override
@@ -259,7 +286,8 @@ public class KeyboardView extends View {
 
         final Paint paint = mPaint;
         final Drawable background = getBackground();
-        if (background != null && mTheme.mCustomColorSupport) {
+        if (background != null && mTheme.mCustomColorSupport
+                && !mMechanicalKeyRenderer.isEnabled()) {
             if (keyboard.getClass() == MoreKeysKeyboard.class) {
                 background.setColorFilter(mCustomColor, PorterDuff.Mode.OVERLAY);
             } else {
@@ -271,10 +299,16 @@ public class KeyboardView extends View {
         final boolean isHardwareAccelerated = canvas.isHardwareAccelerated();
         // TODO: Confirm if it's really required to draw all keys when hardware acceleration is on.
         if (drawAllKeys || isHardwareAccelerated) {
-            if (!isHardwareAccelerated && background != null) {
+            if (!isHardwareAccelerated && (background != null || mMechanicalKeyRenderer.isEnabled())) {
                 // Need to draw keyboard background on {@link #mOffscreenBuffer}.
                 canvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
-                background.draw(canvas);
+                if (mMechanicalKeyRenderer.isEnabled()) {
+                    canvas.drawColor(mMechanicalKeyRenderer.getBoardColor());
+                } else {
+                    background.draw(canvas);
+                }
+            } else if (mMechanicalKeyRenderer.isEnabled()) {
+                canvas.drawColor(mMechanicalKeyRenderer.getBoardColor());
             }
             // Draw all keys.
             for (final Key key : keyboard.getSortedKeys()) {
@@ -285,7 +319,7 @@ public class KeyboardView extends View {
                 if (!keyboard.hasKey(key)) {
                     continue;
                 }
-                if (background != null) {
+                if (background != null || mMechanicalKeyRenderer.isEnabled()) {
                     // Need to redraw key's background on {@link #mOffscreenBuffer}.
                     final int x = key.getX() + getPaddingLeft();
                     final int y = key.getY() + getPaddingTop();
@@ -293,7 +327,11 @@ public class KeyboardView extends View {
                     canvas.save();
                     canvas.clipRect(mClipRect);
                     canvas.drawColor(Color.BLACK, PorterDuff.Mode.CLEAR);
-                    background.draw(canvas);
+                    if (mMechanicalKeyRenderer.isEnabled()) {
+                        canvas.drawColor(mMechanicalKeyRenderer.getBoardColor());
+                    } else {
+                        background.draw(canvas);
+                    }
                     canvas.restore();
                 }
                 onDrawKey(key, canvas, paint);
@@ -313,6 +351,9 @@ public class KeyboardView extends View {
         final KeyVisualAttributes attr = key.getVisualAttributes();
         final KeyDrawParams params = mKeyDrawParams.mayCloneAndUpdateParams(key.getHeight(), attr);
         params.mAnimAlpha = Constants.Color.ALPHA_OPAQUE;
+        if (mMechanicalKeyRenderer.isEnabled()) {
+            mMechanicalKeyRenderer.applyTextColors(params);
+        }
 
         if (!key.isSpacer()) {
             final Drawable background = key.selectBackgroundDrawable(
@@ -329,6 +370,10 @@ public class KeyboardView extends View {
     // Draw key background.
     protected void onDrawKeyBackground(final Key key, final Canvas canvas,
             final Drawable background) {
+        if (mMechanicalKeyRenderer.isEnabled()) {
+            mMechanicalKeyRenderer.drawKey(canvas, key, background.getState());
+            return;
+        }
         final int keyWidth = key.getWidth();
         final int keyHeight = key.getHeight();
         final Rect padding = mKeyBackgroundPadding;
@@ -456,7 +501,13 @@ public class KeyboardView extends View {
                 iconY = (keyHeight - iconHeight) / 2; // Align vertically center.
             }
             final int iconX = (keyWidth - iconWidth) / 2; // Align horizontally center.
+            if (mMechanicalKeyRenderer.isEnabled()) {
+                icon.setColorFilter(mMechanicalKeyRenderer.getTextColor(), PorterDuff.Mode.SRC_IN);
+            }
             drawIcon(canvas, icon, iconX, iconY, iconWidth, iconHeight);
+            if (mMechanicalKeyRenderer.isEnabled()) {
+                icon.clearColorFilter();
+            }
         }
     }
 
@@ -512,7 +563,15 @@ public class KeyboardView extends View {
     }
 
     @Override
+    protected void onAttachedToWindow() {
+        super.onAttachedToWindow();
+        mDevicePreferences.registerOnSharedPreferenceChangeListener(mMechanicalPreferenceListener);
+        mMechanicalKeyRenderer.update(mDevicePreferences);
+    }
+
+    @Override
     protected void onDetachedFromWindow() {
+        mDevicePreferences.unregisterOnSharedPreferenceChangeListener(mMechanicalPreferenceListener);
         super.onDetachedFromWindow();
         freeOffscreenBuffer();
     }

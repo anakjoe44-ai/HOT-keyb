@@ -35,6 +35,10 @@
     <string name="settings_screen_appearance">Appearance</string>
     <!-- Settings screen title for keyboard theme settings [CHAR LIMIT=33] -->
     <string name="settings_screen_theme">Theme</string>
+    <string name="settings_mechanical_palette">Mechanical colorway</string>
+    <string name="settings_mechanical_palette_summary">Choose a dark neon palette or a titanium keycap look</string>
+    <string name="settings_keycap_profile">Keycap profile</string>
+    <string name="settings_keycap_profile_summary">Choose the key shape and raised depth</string>
 
     <!-- Units abbreviation for the duration (milliseconds) [CHAR LIMIT=10] -->
     <string name="abbreviation_unit_milliseconds"><xliff:g id="MILLISECONDS">%s</xliff:g>ms</string>
@@ -90,6 +94,12 @@
     <string name="keyboard_theme_light" translatable="false">Material Light</string>
     <string name="keyboard_theme_system" translatable="false">System Default</string>
     <string name="keyboard_theme_system_border" translatable="false">System Default Border</string>
+    <string name="keyboard_theme_obsidian_neon" translatable="false">Obsidian Neon</string>
+    <string name="keyboard_theme_cyber_purple" translatable="false">Cyber Purple</string>
+    <string name="keyboard_theme_emerald_matrix" translatable="false">Emerald Matrix</string>
+    <string name="keyboard_theme_arctic_blue" translatable="false">Arctic Blue</string>
+    <string name="keyboard_theme_crimson_pulse" translatable="false">Crimson Pulse</string>
+    <string name="keyboard_theme_titanium_silver" translatable="false">Titanium Silver</string>
 
     <!-- Title of the button to add a language in the settings dialog [CHAR LIMIT=15] -->
     <string name="add">Add</string>

@@ -60,6 +60,8 @@ public final class Settings extends BroadcastReceiver implements SharedPreferenc
     public static final String PREF_KEYBOARD_HEIGHT = "pref_keyboard_height";
     public static final String PREF_BOTTOM_OFFSET_PORTRAIT = "pref_bottom_offset_portrait";
     public static final String PREF_KEYBOARD_COLOR = "pref_keyboard_color";
+    public static final String PREF_MECHANICAL_THEME = "pref_mechanical_theme";
+    public static final String PREF_KEYCAP_PROFILE = "pref_keycap_profile";
     public static final String PREF_SHOW_SPECIAL_CHARS = "pref_show_special_chars";
     public static final String PREF_SHOW_NUMBER_ROW = "pref_show_number_row";
     public static final String PREF_SPACE_SWIPE = "pref_space_swipe";
